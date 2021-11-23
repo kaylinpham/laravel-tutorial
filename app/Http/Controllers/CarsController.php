@@ -7,6 +7,9 @@ use App\Models\Car;
 use App\Models\Product;
 use Illuminate\Http\Request;
 
+use App\Rules\Uppercase;
+use App\Http\Requests\CreateValidationRequest;
+
 class CarsController extends Controller
 {
     /**
@@ -50,18 +53,60 @@ class CarsController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
+    // public function store(Request $request)
+    // {
+    //     $request->validate([
+    //         // 'name' => 'required|unique:cars',
+    //         'name' => new Uppercase,
+    //         'founded' => 'required|integer|min:0|max:2021',
+    //         'description' => 'required'
+    //     ]); // If not valid, throw a ValidationException
+
+    //     $car = Car::create([
+    //         'name' => $request->input('name'),
+    //         'founded' => $request->input('founded'),
+    //         'description' => $request->input('description'),
+    //     ]); // create() doesn't need save(), but make() does. So we can use make() instead but remember save().
+
+    //     return redirect('/cars');
+    // }
+
     public function store(Request $request)
     {
-        // $car = new Car;
-        // $car->name = $request->input('name');
-        // $car->founded = $request->input('founded');
-        // $car->description = $request->input('description');
-        // $car->save();
+        // $request->validated(); // use with CreateValidationRequest
+
+        // Methods we can use on $request
+        // guessExtension()
+        // getMimeType()
+        // store()
+        // asStore()
+        // storePublicly()
+        // move()
+        // getClientOriginalName()
+        // getClientMimeType()
+        // guessClientExtension()
+        // getSize()
+        // getError()
+        // isValid()
+        // $test = $request->file('image')->guessExtension();
+
+        $request->validate([
+            // 'name' => 'required|unique:cars',
+            'name' => new Uppercase,
+            'founded' => 'required|integer|min:0|max:2021',
+            'description' => 'required',
+            'image' => 'required|mimes:jpg,png,jpeg|max:5048'
+        ]); // If not valid, throw a ValidationException
+
+        $newImageName = time() . '-' . $request->name . '.' . $request->image->extension();
+
+        $request->image->move(public_path('images'), $newImageName);
 
         $car = Car::create([
             'name' => $request->input('name'),
             'founded' => $request->input('founded'),
             'description' => $request->input('description'),
+            'image_path' => $newImageName
         ]); // create() doesn't need save(), but make() does. So we can use make() instead but remember save().
 
         return redirect('/cars');
@@ -104,8 +149,10 @@ class CarsController extends Controller
      * @param  int  $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(CreateValidationRequest $request, $id)
     {
+        $request->validated(); // use with CreateValidationRequest
+
         $car = Car::where('id', $id)->update([
             'name' => $request->input('name'),
             'founded' => $request->input('founded'),
