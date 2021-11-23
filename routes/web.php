@@ -1,5 +1,8 @@
 <?php
 
+use App\Http\Controllers\CarsController;
+use App\Http\Controllers\PagesController;
+use App\Http\Controllers\PostsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +16,5 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+// Cars
+Route::resource('/cars', CarsController::class);
